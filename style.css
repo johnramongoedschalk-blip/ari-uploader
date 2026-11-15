@@ -3,3 +3,4 @@ main{max-width:680px;margin:0 auto;padding:48px 16px 72px}
 img{width:96px;height:96px;image-rendering:pixelated;border-radius:12px}
 h1{font-size:30px;margin:20px 0 8px}h2{font-size:20px;margin:32px 0 8px;color:#c4b5fd}
 a{color:#60a5fa}p,li{color:#d9d2f3}small{color:#9d93c4}
+code{font-size:15px;color:#c4b5fd}strong{color:#ece7fb}
