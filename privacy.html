@@ -4,9 +4,9 @@
 <body><main>
 <img src="logo.png" alt="Ari Uploader logo">
 <h1>Privacy policy</h1>
-<small>Effective date: 17 November 2026 (earlier version: 15 November 2026, YouTube only)</small>
+<small>Effective date: 17 November 2026 (earlier versions: 15 November 2026, YouTube only; Instagram and Facebook added earlier on 17 November)</small>
 
-<p>This policy explains what Ari Uploader ("the app") accesses, collects, stores, uses and shares, and how you can control it. The app is a private tool run by one person (the "owner") to upload their own videos to their own YouTube channels and, where the owner has connected them, to their own Instagram accounts and Facebook Pages. It is not offered to the public.</p>
+<p>This policy explains what Ari Uploader ("the app") accesses, collects, stores, uses and shares, and how you can control it. The app is a private tool run by one person (the "owner") to upload their own videos to their own YouTube channels and, where the owner has connected them, to their own TikTok accounts, Instagram accounts and Facebook Pages. It is not offered to the public.</p>
 
 <h2>1. YouTube API Services</h2>
 <p>The app uses the YouTube API Services. By using the app, you agree to be bound by the <a href="https://www.youtube.com/t/terms">YouTube Terms of Service</a>. Google's handling of your information is described in the <a href="https://policies.google.com/privacy">Google Privacy Policy</a>.</p>
@@ -52,33 +52,42 @@
 <p>What the app stores for Instagram and Facebook: the access token (in the operating system's keychain, never in a plain file), the account's ID, username or Page name, and a record of each video the owner chose to publish (its file name, caption, date, and the post ID and link Meta returns). It does not collect personal information about people who watch the videos or who follow the account. It is not used for advertising, is not sold, is not shared with anyone except Meta in order to publish, and is not used to train machine-learning or artificial-intelligence models.</p>
 <p>The video file and caption are sent to Meta's servers when the owner publishes, to create the post. The app has no server of its own and keeps no copy of that data outside the owner's computer.</p>
 
-<h2>7. Where information is stored and how it is protected</h2>
-<p>Everything is stored on the owner's own computer. Sign-in and access tokens, and the app's Google client credentials and Meta app credentials, are kept in the operating system's encrypted keychain, not in plain files. Channel and account details and upload records are kept in local files on that computer. The app has no server of its own, and no copy is kept in any cloud service run by the app. Communication with Google and Meta uses encrypted connections (HTTPS).</p>
+<h2>7. TikTok</h2>
+<p>The app can also send the owner's own finished videos to the owner's own TikTok accounts using TikTok's Login Kit and Content Posting API. Only accounts the owner owns or administers are connected, and the app does not offer sign-in to the public. The owner connects an account once through TikTok's own authorization screen on the owner's computer.</p>
+<p>The permissions (scopes) the app asks for:</p>
+<ul>
+<li><code>user.info.basic</code>: to read the connected account's unique ID (open ID), display name and avatar, so the app can confirm the right account was connected.</li>
+<li><code>video.upload</code>: to send a video to the connected account's TikTok inbox as a draft, which the owner then finishes and posts in the TikTok app.</li>
+</ul>
+<p>The app does not read the account's videos, followers, messages, comments or analytics, and does not post on its own without the owner's approval of each video. What it stores: the access and refresh tokens (in the operating system's keychain, never in a plain file), the account's open ID and display name, and a record of each video the owner chose to send (file name, caption, date and the publish ID TikTok returns). It is not used for advertising, is not sold, is not shared with anyone except TikTok in order to deliver the video, and is not used to train machine-learning or artificial-intelligence models. Your use of TikTok is governed by the <a href="https://www.tiktok.com/legal/page/global/terms-of-service/en">TikTok Terms of Service</a>, and TikTok's handling of your information by the <a href="https://www.tiktok.com/legal/page/row/privacy-policy/en">TikTok Privacy Policy</a>.</p>
 
-<h2>8. Sharing</h2>
-<p>The app does not share, sell, rent or trade information with anyone. Information goes only to Google and YouTube, and to Meta (Instagram and Facebook), and only to carry out the uploads and account checks described above. Information would be disclosed to anyone else only if required by law.</p>
+<h2>8. Where information is stored and how it is protected</h2>
+<p>Everything is stored on the owner's own computer. Sign-in and access tokens, and the app's Google, Meta and TikTok client credentials, are kept in the operating system's encrypted keychain, not in plain files. Channel and account details and upload records are kept in local files on that computer. The app has no server of its own, and no copy is kept in any cloud service run by the app. Communication with Google, Meta and TikTok uses encrypted connections (HTTPS).</p>
 
-<h2>9. Cookies and device information</h2>
-<p>The app does not place cookies, use tracking or analytics tools, or collect device identifiers. It runs on the owner's computer and talks only to Google and Meta. This website is hosted on GitHub Pages; GitHub may log visits to it under the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub Privacy Statement</a>.</p>
+<h2>9. Sharing</h2>
+<p>The app does not share, sell, rent or trade information with anyone. Information goes only to Google and YouTube, to Meta (Instagram and Facebook) and to TikTok, and only to carry out the uploads and account checks described above. Information would be disclosed to anyone else only if required by law.</p>
 
-<h2>10. How long information is kept</h2>
+<h2>10. Cookies and device information</h2>
+<p>The app does not place cookies, use tracking or analytics tools, or collect device identifiers. It runs on the owner's computer and talks only to Google, Meta and TikTok. This website is hosted on GitHub Pages; GitHub may log visits to it under the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub Privacy Statement</a>.</p>
+
+<h2>11. How long information is kept</h2>
 <p>Sign-in and access tokens and channel or account details are kept while the channel or account stays connected. Upload records are kept as the owner's record of their own posts. When access is removed (see below), the stored token and channel or account details are deleted from the owner's computer within 7 days.</p>
 
-<h2>11. Removing access and deleting data</h2>
+<h2>12. Removing access and deleting data</h2>
 <p>You can remove the app's access to your Google account at any time on the <a href="https://myaccount.google.com/permissions">Google security settings page</a> (Third-party apps &amp; services). From that moment the stored token stops working and the app can no longer reach your account.</p>
-<p>For Instagram and Facebook, remove the app on Facebook under Settings &amp; privacy &gt; Settings &gt; Apps and websites (Business Integrations), and on Instagram under Settings &gt; Website permissions &gt; Apps and websites; or revoke or delete the access token in the owner's Meta Business Suite. The stored token then stops working.</p>
+<p>For TikTok, remove the app in the TikTok app under Settings and privacy > Security and permissions > Apps and services (Manage app permissions), after which the stored token stops working. For Instagram and Facebook, remove the app on Facebook under Settings &amp; privacy &gt; Settings &gt; Apps and websites (Business Integrations), and on Instagram under Settings &gt; Website permissions &gt; Apps and websites; or revoke or delete the access token in the owner's Meta Business Suite. The stored token then stops working.</p>
 <p><strong>Data deletion requests.</strong> To ask for all data the app holds about an Instagram account, Facebook Page or YouTube channel to be deleted (its token, account details and upload records), open an issue at the contact link below, or contact the owner through the Instagram account or Page concerned, saying which account it is. It will be deleted from the owner's computer within 7 days. Posts already published on Instagram, Facebook or YouTube are not held by the app; they are removed in those services.</p>
 
-<h2>12. Children</h2>
+<h2>13. Children</h2>
 <p>The app is not directed at children and does not knowingly collect information from anyone under 13 (or the minimum age in your country).</p>
 
-<h2>13. Your rights</h2>
+<h2>14. Your rights</h2>
 <p>Depending on where you live (for example under the GDPR in the European Union, or under California law), you may have the right to ask what information is held about you, to have it corrected or deleted, and to object to its use. Use the contact link below for any such request.</p>
 
-<h2>14. Changes to this policy</h2>
+<h2>15. Changes to this policy</h2>
 <p>If this policy changes, the new version will be posted on this page with a new effective date.</p>
 
-<h2>15. Contact</h2>
+<h2>16. Contact</h2>
 <p>Questions or requests: open an issue at <a href="https://github.com/johnramongoedschalk-blip/ari-uploader/issues">github.com/johnramongoedschalk-blip/ari-uploader/issues</a>, or use the developer contact shown on the app's Google consent screen.</p>
 
 <p><a href="index.html">Back to the home page</a> &middot; <a href="terms.html">Terms of service</a></p>
