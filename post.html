@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ari Uploader: post to TikTok</title>
+<link rel="stylesheet" href="style.css">
+<style>
+main{max-width:720px}
+.card{background:#1d1238;border:1px solid #3a2a66;border-radius:12px;padding:18px 20px;margin:18px 0}
+label{display:block;margin:14px 0 6px;color:#c4b5fd;font-weight:600}
+input[type=text],select,textarea{width:100%;box-sizing:border-box;background:#150c2b;color:#ece7fb;border:1px solid #4b3a80;border-radius:8px;padding:10px;font:inherit}
+textarea{min-height:84px;resize:vertical}
+.row{display:flex;align-items:center;gap:10px;margin:8px 0}
+.row label{display:inline;margin:0;font-weight:400;color:#ece7fb}
+.row.off label,.row.off input{opacity:.45}
+.note{font-size:15px;color:#9d93c4;margin:4px 0}
+.err{color:#fca5a5}.ok{color:#86efac}
+video{width:100%;max-height:360px;background:#000;border-radius:8px;margin-top:8px}
+button{background:#7c3aed;color:#fff;border:0;border-radius:8px;padding:12px 20px;font:inherit;font-weight:700;cursor:pointer}
+button[disabled]{background:#3a2a66;color:#9d93c4;cursor:not-allowed}
+.who{font-size:19px;color:#ece7fb}
+.sub{margin-left:26px}
+.hidden{display:none}
+</style></head>
+<body><main>
+<img src="logo.png" alt="Ari Uploader logo">
+<h1>Post to TikTok</h1>
+<p class="note">Ari Uploader posts a video you choose to a TikTok account you have connected, using TikTok's Content Posting API (Direct Post). Nothing is sent to TikTok until you press Post.</p>
+
+<div class="card" id="status"><span id="statusText">Looking for Ari Uploader on this computer...</span></div>
+
+<div id="app" class="hidden">
+ <div class="card">
+  <label for="account">TikTok account</label>
+  <select id="account"></select>
+  <p class="who" id="who"></p>
+  <p class="note err" id="cannot"></p>
+ </div>
+
+ <div id="form" class="hidden">
+ <div class="card">
+  <label for="file">Video</label>
+  <input type="file" id="file" accept="video/mp4,video/quicktime,video/webm">
+  <video id="preview" controls class="hidden"></video>
+  <p class="note" id="fileNote"></p>
+
+  <label for="title">Title</label>
+  <textarea id="title" maxlength="2200" placeholder="Write the caption. Add hashtags here if you like."></textarea>
+  <p class="note"><span id="count">0</span> / 2200</p>
+
+  <label for="privacy">Who can view this video</label>
+  <select id="privacy"><option value="" selected disabled>Select who can view this video</option></select>
+  <p class="note" id="privNote"></p>
+ </div>
+
+ <div class="card">
+  <label>Allow users to</label>
+  <div class="row" id="rowComment"><input type="checkbox" id="comment"><label for="comment">Comment</label></div>
+  <div class="row" id="rowDuet"><input type="checkbox" id="duet"><label for="duet">Duet</label></div>
+  <div class="row" id="rowStitch"><input type="checkbox" id="stitch"><label for="stitch">Stitch</label></div>
+  <p class="note" id="interNote"></p>
+ </div>
+
+ <div class="card">
+  <div class="row"><input type="checkbox" id="disclose"><label for="disclose"><strong>Disclose video content</strong></label></div>
+  <p class="note">Turn this on to show that this video promotes yourself, a third party, or both.</p>
+  <div id="discloseBox" class="hidden sub">
+   <div class="row" id="rowOrganic"><input type="checkbox" id="organic"><label for="organic">Your brand</label></div>
+   <p class="note sub">You are promoting yourself or your own business.</p>
+   <div class="row" id="rowBranded"><input type="checkbox" id="branded"><label for="branded">Branded content</label></div>
+   <p class="note sub">You are promoting another brand or a third party.</p>
+   <p class="note" id="discloseNote"></p>
+  </div>
+ </div>
+
+ <div class="card">
+  <p class="note" id="consent"></p>
+  <button id="post" disabled>Post to TikTok</button>
+  <p class="note" id="postNote"></p>
+ </div>
+ </div>
+
+ <div class="card hidden" id="progress"><p id="progText"></p></div>
+</div>
+
+<p class="note">Ari Uploader runs on the owner's computer: the video goes from this page to the program on this computer and from there straight to TikTok; no other server sees it. Your TikTok login is never typed into this page.
+ &middot; <a href="index.html">About</a> &middot; <a href="privacy.html">Privacy policy</a> &middot; <a href="terms.html">Terms of service</a></p>
+</main>
+<script>
+"use strict";
+const LOCAL = "http://127.0.0.1:3456";
+const BASE = location.hostname === "127.0.0.1" ? "" : LOCAL;
+const H = {"X-Ari-Uploader": "1"};
+const LABEL = {PUBLIC_TO_EVERYONE: "Everyone", MUTUAL_FOLLOW_FRIENDS: "Friends", FOLLOWER_OF_CREATOR: "Followers", SELF_ONLY: "Only me"};
+const MUSIC = "https://www.tiktok.com/legal/page/global/music-usage-confirmation/en";
+const BRANDED = "https://www.tiktok.com/legal/page/global/bc-policy/en";
+const $ = id => document.getElementById(id);
+let creator = null, videoOk = false, videoFile = null, busy = false;
+
+async function api(path, opts) {
+  const r = await fetch(BASE + path, Object.assign({headers: H}, opts || {}));
+  return await r.json();
+}
+function show(id, on) { $(id).classList.toggle("hidden", !on); }
+
+async function start() {
+  let acc;
+  try { acc = await api("/api/accounts"); }
+  catch (e) {
+    $("statusText").innerHTML = '<span class="err">Ari Uploader is not running on this computer.</span> Start it with <code>ari-tiktok-connect web</code>, then reload this page. Use Chrome.';
+    return;
+  }
+  show("status", false);
+  if (!acc.accounts || !acc.accounts.length) {
+    show("status", true);
+    $("statusText").innerHTML = 'No TikTok account is connected yet. Run <code>ari-tiktok-connect connect &lt;name&gt;</code> and sign in on TikTok, then reload.';
+    return;
+  }
+  const sel = $("account");
+  sel.innerHTML = acc.accounts.map(a => `<option>${a}</option>`).join("");
+  show("app", true);
+  await loadCreator();
+}
+
+// TikTok requires the latest creator info every time the posting page is shown.
+async function loadCreator() {
+  creator = null; show("form", false); $("cannot").textContent = ""; $("who").textContent = "Asking TikTok what this account can post...";
+  const d = await api("/api/creator?account=" + encodeURIComponent($("account").value));
+  if (d.error) {
+    $("who").textContent = "";
+    $("cannot").className = "note err";
+    $("cannot").textContent = d.cannot_post ? "TikTok says this account cannot post right now (" + d.error + "). Please try again later." : d.error;
+    return;
+  }
+  creator = d.creator;
+  $("who").innerHTML = "Posting to: <strong></strong>";
+  $("who").querySelector("strong").textContent = (creator.nickname || creator.username) + (creator.username ? "  (@" + creator.username + ")" : "");
+  const p = $("privacy");
+  p.innerHTML = '<option value="" selected disabled>Select who can view this video</option>' +
+    creator.privacy_options.map(o => `<option value="${o}">${LABEL[o] || o}</option>`).join("");
+  for (const [k, row] of [["comment", "rowComment"], ["duet", "rowDuet"], ["stitch", "rowStitch"]]) {
+    const off = creator[k + "_disabled"];
+    $(k).checked = false; $(k).disabled = !!off;
+    $(row).classList.toggle("off", !!off);
+    $(row).title = off ? "Turned off in your TikTok settings" : "";
+  }
+  const offs = ["comment", "duet", "stitch"].filter(k => creator[k + "_disabled"]);
+  $("interNote").textContent = offs.length ? "Greyed out: turned off in your TikTok app settings (" + offs.join(", ") + ")." : "";
+  show("form", true);
+  refresh();
+}
+
+$("account").addEventListener("change", loadCreator);
+$("title").addEventListener("input", () => { $("count").textContent = $("title").value.length; });
+
+$("file").addEventListener("change", () => {
+  const f = $("file").files[0];
+  videoOk = false; videoFile = f || null; $("fileNote").textContent = ""; $("fileNote").className = "note";
+  if (!f) { show("preview", false); refresh(); return; }
+  const v = $("preview");
+  v.src = URL.createObjectURL(f); show("preview", true);
+  v.onloadedmetadata = () => {
+    const max = creator && creator.max_seconds;
+    if (max && v.duration > max) {
+      $("fileNote").className = "note err";
+      $("fileNote").textContent = `This video is ${Math.round(v.duration)} s; this account can post up to ${max} s. Choose a shorter video.`;
+      videoOk = false;
+    } else {
+      $("fileNote").textContent = `${f.name}: ${Math.round(v.duration)} s, ${(f.size / 1e6).toFixed(1)} MB. Ready.`;
+      videoOk = true;
+    }
+    refresh();
+  };
+  v.onerror = () => { $("fileNote").className = "note err"; $("fileNote").textContent = "The browser cannot read this video."; refresh(); };
+  if (!$("title").value) { $("title").value = ""; }
+});
+
+$("disclose").addEventListener("change", () => {
+  show("discloseBox", $("disclose").checked);
+  if (!$("disclose").checked) { $("organic").checked = false; $("branded").checked = false; }
+  refresh();
+});
+for (const id of ["organic", "branded", "privacy", "comment", "duet", "stitch"]) $(id).addEventListener("change", refresh);
+
+function refresh() {
+  if (!creator) return;
+  const priv = $("privacy").value, branded = $("branded").checked, organic = $("organic").checked, disclose = $("disclose").checked;
+  // Branded content cannot be private: "Only me" is disabled while it is ticked, and ticking it is blocked while private.
+  for (const o of $("privacy").options) {
+    if (o.value === "SELF_ONLY") {
+      o.disabled = branded;
+      o.title = branded ? "Branded content visibility cannot be set to private." : "";
+    }
+  }
+  if (branded && priv === "SELF_ONLY") $("privacy").value = "";
+  const onlyPrivate = creator.privacy_options.every(o => o === "SELF_ONLY");
+  const brandBlocked = onlyPrivate || $("privacy").value === "SELF_ONLY";
+  $("branded").disabled = brandBlocked && !branded;
+  $("rowBranded").classList.toggle("off", $("branded").disabled);
+  $("rowBranded").title = $("branded").disabled ? "Branded content visibility cannot be set to private." : "";
+  $("privNote").textContent = onlyPrivate ? "TikTok currently lets this app post only privately (Only me) until its audit is complete." : "";
+  let dn = "";
+  if (disclose && (branded || organic)) {
+    dn = branded ? "Your video will be labeled \"Paid partnership\"." : "Your video will be labeled \"Promotional content\".";
+  }
+  $("discloseNote").textContent = dn;
+  const bad = disclose && !branded && !organic;
+  $("consent").innerHTML = branded
+    ? `By posting, you agree to TikTok's <a href="${BRANDED}" target="_blank" rel="noopener">Branded Content Policy</a> and <a href="${MUSIC}" target="_blank" rel="noopener">Music Usage Confirmation</a>.`
+    : `By posting, you agree to TikTok's <a href="${MUSIC}" target="_blank" rel="noopener">Music Usage Confirmation</a>.`;
+  const ready = videoOk && $("privacy").value && !bad && !busy;
+  $("post").disabled = !ready;
+  $("post").title = bad ? "You need to indicate if your content promotes yourself, a third party, or both." : "";
+  $("postNote").textContent = bad ? "You need to indicate if your content promotes yourself, a third party, or both."
+    : (!videoFile ? "Choose a video." : (!$("privacy").value ? "Choose who can view this video." : ""));
+}
+
+$("post").addEventListener("click", async () => {
+  if ($("post").disabled || !videoFile) return;
+  busy = true; refresh();
+  show("progress", true); $("progText").className = ""; $("progText").textContent = "Sending the video to Ari Uploader on this computer...";
+  const q = new URLSearchParams({
+    account: $("account").value, title: $("title").value, privacy: $("privacy").value, consent: "1",
+    comment: $("comment").checked ? 1 : 0, duet: $("duet").checked ? 1 : 0, stitch: $("stitch").checked ? 1 : 0,
+    brand_organic: $("organic").checked ? 1 : 0, brand_content: $("branded").checked ? 1 : 0,
+    ext: (videoFile.name.split(".").pop() || "mp4")
+  });
+  try {
+    const r = await fetch(BASE + "/api/post?" + q, {method: "POST", headers: Object.assign({"Content-Type": "application/octet-stream"}, H), body: videoFile});
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    $("progText").textContent = "Sent to TikTok. Waiting for TikTok to finish posting...";
+    for (;;) {
+      await new Promise(res => setTimeout(res, 1500));
+      const j = await api("/api/job?id=" + encodeURIComponent(d.job));
+      if (j.state === "done") {
+        $("progText").className = "ok";
+        $("progText").innerHTML = "Posted (" + (LABEL[j.result.privacy] || j.result.privacy) + "). TikTok may take a few minutes to process the video before it appears on your profile. Reference: " + j.result.publish_id;
+        break;
+      }
+      if (j.state === "error" || j.state === "unknown") { throw new Error(j.error || "TikTok did not post the video"); }
+      if (j.lines && j.lines.length) $("progText").textContent = j.lines[j.lines.length - 1] + " Processing can take a few minutes.";
+    }
+  } catch (e) {
+    $("progText").className = "err"; $("progText").textContent = "Not posted: " + e.message;
+  }
+  busy = false; refresh();
+});
+
+start();
+</script>
+</body></html>
