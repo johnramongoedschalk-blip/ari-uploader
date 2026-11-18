@@ -27,6 +27,14 @@ button[disabled]{background:#3a2a66;color:#9d93c4;cursor:not-allowed}
 
 <div class="card" id="status"><span id="statusText">Looking for Ari Uploader on this computer...</span></div>
 
+<div class="card hidden" id="connectCard">
+ <label for="acctName">Connect a TikTok account</label>
+ <input type="text" id="acctName" value="main" maxlength="40">
+ <p class="note">Press Connect: TikTok's own page opens, where you sign in and choose Authorize for two permissions: <code>user.info.basic</code> (your display name) and <code>video.publish</code> (post videos you choose). This page never sees your password.</p>
+ <button id="connect">Connect TikTok account</button>
+ <p class="note" id="connectNote"></p>
+</div>
+
 <div id="app" class="hidden">
  <div class="card">
   <label for="account">TikTok account</label>
@@ -109,16 +117,40 @@ async function start() {
     return;
   }
   show("status", false);
-  if (!acc.accounts || !acc.accounts.length) {
-    show("status", true);
-    $("statusText").innerHTML = 'No TikTok account is connected yet. Run <code>ari-tiktok-connect connect &lt;name&gt;</code> and sign in on TikTok, then reload.';
-    return;
-  }
+  show("connectCard", true);
+  if (!acc.accounts || !acc.accounts.length) return;
+  await showAccounts(acc.accounts);
+}
+
+async function showAccounts(list, pick) {
   const sel = $("account");
-  sel.innerHTML = acc.accounts.map(a => `<option>${a}</option>`).join("");
+  sel.innerHTML = list.map(a => `<option>${a}</option>`).join("");
+  if (pick) sel.value = pick;
   show("app", true);
   await loadCreator();
 }
+
+$("connect").addEventListener("click", async () => {
+  const name = $("acctName").value.trim() || "main";
+  $("connect").disabled = true; $("connectNote").className = "note"; $("connectNote").textContent = "Opening TikTok's sign-in page in your browser...";
+  try {
+    const d = await api("/api/connect?account=" + encodeURIComponent(name), {method: "POST"});
+    if (d.error) throw new Error(d.error);
+    for (;;) {
+      await new Promise(res => setTimeout(res, 1500));
+      const j = await api("/api/job?id=" + encodeURIComponent(d.job));
+      if (j.state === "done") {
+        $("connectNote").className = "note ok"; $("connectNote").textContent = "Connected: " + j.result.display_name + ".";
+        const acc = await api("/api/accounts");
+        await showAccounts(acc.accounts, name);
+        break;
+      }
+      if (j.state === "error") throw new Error(j.error);
+      $("connectNote").textContent = "Waiting for you to sign in and choose Authorize on TikTok's page...";
+    }
+  } catch (e) { $("connectNote").className = "note err"; $("connectNote").textContent = "Not connected: " + e.message; }
+  $("connect").disabled = false;
+});
 
 // TikTok requires the latest creator info every time the posting page is shown.
 async function loadCreator() {
